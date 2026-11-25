@@ -3,6 +3,7 @@ import { initialCalls, ME } from '../data/demo'
 import { market } from './market'
 import { api, setToken, weiToBnb } from '../lib/api'
 import * as walletLib from '../lib/wallet'
+import { BRAND } from '../brand'
 
 const AppCtx = createContext(null)
 export const useApp = () => useContext(AppCtx)
@@ -200,6 +201,34 @@ export function AppProvider({ children }) {
     return () => { alive = false; clearInterval(id) }
   }, [online])
 
+  // ---------- $UPW ----------
+  // The contract address, buy link and market data come only from the backend (its upw.json file); nothing about
+  // the CA is stored in the frontend. It is loaded at start, and the server pushes every change to upw.json over
+  // the live stream at once. The market numbers refresh every minute. brand.js only has fallback X / Telegram links.
+  const [upwInfo, setUpwInfo] = useState(null)
+  useEffect(() => {
+    let alive = true
+    const load = () => api('/upw').then((u) => alive && setUpwInfo(u)).catch(() => {})
+    load()
+    const off = market.onUpw((u) => alive && setUpwInfo(u))
+    const id = setInterval(load, 60000)
+    return () => { alive = false; off(); clearInterval(id) }
+  }, [])
+  const upw = useMemo(() => {
+    const ca = upwInfo?.ca || null
+    return {
+      ca,
+      launched: !!ca,
+      buyUrl: upwInfo?.buyUrl || null,
+      x: upwInfo?.x || BRAND.x || null,
+      telegram: upwInfo?.telegram || BRAND.telegram || null,
+      explorer: ca ? `https://bscscan.com/token/${ca}` : null,
+      chart: ca ? `https://www.geckoterminal.com/bsc/tokens/${ca}` : null,
+      market: upwInfo?.market || null,
+      loaded: !!upwInfo,
+    }
+  }, [upwInfo])
+
   const openToken = useCallback((sym, fromUser = true) => {
     market.setSelected(sym)
     setSelected(sym)
@@ -238,10 +267,10 @@ export function AppProvider({ children }) {
 
   const value = useMemo(() => ({
     screen, go, online, wallet, connecting, toggleWallet, connectWith, walletModal, setWalletModal, walletName, signOut, needWallet, walletPulse, toasts, toast,
-    session, profile, refreshProfile, me, vault,
+    session, profile, refreshProfile, me, vault, upw,
     calls, setCalls, refreshCalls, selected, openToken, closeToken, sheetOpen, setSheetOpen,
     tf, setTf, makeCall, confirmed, setConfirmed,
-  }), [screen, go, online, wallet, connecting, toggleWallet, connectWith, walletModal, walletName, signOut, needWallet, walletPulse, toasts, toast, session, profile, refreshProfile, me, vault,
+  }), [screen, go, online, wallet, connecting, toggleWallet, connectWith, walletModal, walletName, signOut, needWallet, walletPulse, toasts, toast, session, profile, refreshProfile, me, vault, upw,
     calls, refreshCalls, selected, openToken, closeToken, sheetOpen, tf, makeCall, confirmed])
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>

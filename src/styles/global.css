@@ -494,6 +494,13 @@ tr.gap td{padding:4px 10px;color:var(--muted);text-align:center;font-size:12px}
 .tk-actions{display:flex;gap:10px;flex-wrap:wrap}
 .tk-actions a{text-decoration:none}
 .tk-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:var(--gap)}
+.tk-market{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tk-stat{display:flex;flex-direction:column;gap:8px;padding:16px 18px}
+.tk-stat span{font-size:12.5px;color:var(--muted)}
+.tk-stat b{font-size:19px;font-weight:600;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tk-stat b.up{color:var(--up)}.tk-stat b.down{color:var(--down)}
+.tk-market-empty p{margin:0;font-size:14px;line-height:1.55;color:var(--muted)}
+.tk-market-empty b{color:var(--navy)}
 .tk-facts dl{margin:0;display:flex;flex-direction:column}
 .tk-facts dl>div{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid var(--line)}
 .tk-facts dl>div:last-child{border-bottom:0}

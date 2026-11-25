@@ -1,9 +1,11 @@
 // $UPW: what the token is, its contract, how its tax funds the Reward Vault, and what holding it does.
-// Nothing here is invented: unknown values (CA, buy link, vault balance) show as "at launch".
+// Nothing here is invented: the CA, links and market data come from the backend (upw.json + GeckoTerminal / GoPlus);
+// unknown values show as "at launch".
 import { useApp } from '../store/AppContext'
 import { BRAND } from '../brand'
 import { Logo, Tag, Tilt } from '../components/Bits'
 import { IconAlert, IconCopy } from '../components/Icons'
+import { fmtUsd, fmtPct, fmtInt } from '../lib/format'
 
 const SPLIT = [
   { label: 'Top callers', pct: 60, color: '#1BAAE0', bar: 'linear-gradient(90deg,#2EC5EC,#0A8BD0)', text: 'Paid in BNB every week, by leaderboard score.' },
@@ -25,9 +27,10 @@ const UTILITY = [
 ]
 
 export default function Token() {
-  const { toast, vault, go } = useApp()
-  const ca = BRAND.ca
-  const scan = ca ? `https://bscscan.com/token/${ca}` : null
+  const { toast, vault, go, upw } = useApp()
+  const ca = upw.ca
+  const scan = upw.explorer
+  const m = upw.market
   const copy = async () => {
     try { await navigator.clipboard?.writeText(ca); toast('Contract address copied', 'check') } catch { toast(ca, 'info') }
   }
@@ -43,9 +46,12 @@ export default function Token() {
           </div>
         </div>
         <div className="tk-actions">
-          {BRAND.buyUrl
-            ? <a className="btn-water" href={BRAND.buyUrl} target="_blank" rel="noreferrer noopener">Buy ${BRAND.token} ↗</a>
-            : <button className="btn-water" disabled title="Buying opens when the token launches on Flap.sh">Buy at launch</button>}
+          {upw.buyUrl
+            ? <a className="btn-water" href={upw.buyUrl} target="_blank" rel="noreferrer noopener">Buy ${BRAND.token} ↗</a>
+            : upw.launched
+              ? <button className="btn-water" disabled title="The buy link is being added">Buy link soon</button>
+              : <button className="btn-water" disabled title="Buying opens when the token launches on Flap.sh">Buy at launch</button>}
+          {upw.chart && <a className="btn-glass" href={upw.chart} target="_blank" rel="noreferrer noopener">Chart ↗</a>}
           {scan && <a className="btn-glass" href={scan} target="_blank" rel="noreferrer noopener">BscScan ↗</a>}
         </div>
       </div>
@@ -82,6 +88,8 @@ export default function Token() {
           <button className="btn-glass tk-vault-btn" onClick={() => go('rewards')}>Rewards &amp; claiming</button>
         </Tilt>
       </div>
+
+      <Market upw={upw} m={m} />
 
       <div className="section-h"><h2>How ${BRAND.token} works</h2></div>
       <ol className="tk-flow">
@@ -121,5 +129,37 @@ export default function Token() {
         <p style={{ margin: 0 }}>${BRAND.token} is a utility token, not an investment. Its price can go to zero. Calling tokens on {BRAND.name} is always free and never requires ${BRAND.token}.</p>
       </div>
     </section>
+  )
+}
+
+/** Live $UPW market data: from the backend once the token trades, otherwise an honest "not yet". */
+function Market({ upw, m }) {
+  const tax = (v) => (v == null ? '—' : (Math.round(v * 10) / 10) + '%')
+  const stats = m && m.indexed ? [
+    ['Price', m.priceUsd == null ? '—' : m.priceUsd < 0.01 ? '$' + m.priceUsd.toPrecision(3) : '$' + m.priceUsd.toFixed(4)],
+    ['Market cap', m.mcap == null ? '—' : fmtUsd(m.mcap)],
+    ['24h change', m.chg24h == null ? '—' : fmtPct(m.chg24h), m.chg24h == null ? '' : m.chg24h >= 0 ? 'up' : 'down'],
+    ['24h volume', m.vol24h == null ? '—' : fmtUsd(m.vol24h)],
+    ['Liquidity', m.liquidity == null ? '—' : fmtUsd(m.liquidity)],
+    ['Holders', m.holders == null ? '—' : fmtInt(m.holders)],
+    ['Buy / sell tax', `${tax(m.buyTax)} / ${tax(m.sellTax)}`],
+  ] : null
+  return (
+    <>
+      <div className="section-h"><h2>Market</h2>{stats && <span className="muted" style={{ fontSize: 13 }}>live · updates every minute</span>}</div>
+      {stats ? (
+        <div className="tk-market">
+          {stats.map(([k, v, tone]) => (
+            <div key={k} className="glass card tk-stat"><span>{k}</span><b className={`mono ${tone || ''}`}>{v}</b></div>
+          ))}
+        </div>
+      ) : (
+        <div className="glass card tk-market-empty">
+          {!upw.launched
+            ? <p>Price, market cap, volume and holders appear here, live, as soon as ${BRAND.token} launches on Flap.sh.</p>
+            : <p>${BRAND.token} is live. Market data appears here once trading is indexed{m?.holders != null ? <> · <b>{fmtInt(m.holders)}</b> holders so far</> : null}. While it is on the Flap.sh bonding curve this can take a while.</p>}
+        </div>
+      )}
+    </>
   )
 }

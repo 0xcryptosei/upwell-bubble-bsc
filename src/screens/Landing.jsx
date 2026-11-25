@@ -106,8 +106,10 @@ function RisingNow({ onPick }) {
 
 /** $UPW contract address with a copy button, or "coming soon" before launch. */
 function ContractChip({ className = '' }) {
-  const { toast } = useApp()
-  const ca = BRAND.ca
+  const { toast, upw } = useApp()
+  const ca = upw.ca
+  // until the server has answered, show nothing in the chip rather than a "Coming soon" that may be wrong
+  if (!upw.loaded) return <span className={`lp-ca mono is-wait ${className}`} aria-hidden="true"><b>CA</b><i /></span>
   if (!ca) return <span className={`lp-ca mono ${className}`} title="The $UPW contract address is published at launch"><b>CA</b>Coming soon</span>
   const copy = async () => {
     try { await navigator.clipboard?.writeText(ca); toast('Contract address copied', 'check') }
@@ -120,14 +122,14 @@ function ContractChip({ className = '' }) {
   )
 }
 
-/** Round social link; shows "coming soon" until the link is set in brand.js / .env. */
+/** Round social link; shows "coming soon" if no link is set (backend upw.json, brand.js or .env). */
 function Social({ href, label, children }) {
   if (!href) return <span className="lp-social off" title={`${label}: coming soon`} aria-label={`${label}: coming soon`}>{children}</span>
   return <a className="lp-social" href={href} target="_blank" rel="noreferrer noopener" aria-label={`Upwell on ${label}`} title={`Upwell on ${label}`}>{children}</a>
 }
 
 export default function Landing() {
-  const { go, openToken } = useApp()
+  const { go, openToken, upw } = useApp()
   const launch = (sym) => { go('bubbles'); if (sym) setTimeout(() => openToken(sym), 0) }
 
   // the landing is one screen: no page scroll while it is shown
@@ -171,8 +173,8 @@ export default function Landing() {
         <span className="lp-hint mono" aria-hidden="true"><i />Touch the water</span>
         <div className="lp-meta">
           <ContractChip className="lp-bottom-ca" />
-          <Social href={BRAND.x} label="X"><IconX /></Social>
-          <Social href={BRAND.telegram} label="Telegram"><IconTelegram /></Social>
+          <Social href={upw.x} label="X"><IconX /></Social>
+          <Social href={upw.telegram} label="Telegram"><IconTelegram /></Social>
         </div>
       </footer>
       <p className="lp-legal">Not financial advice. New tokens are very risky.</p>

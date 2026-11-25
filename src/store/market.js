@@ -16,6 +16,7 @@ let version = 0
 const listeners = new Set()
 const listingListeners = new Set()
 const winListeners = new Set()
+const upwListeners = new Set()
 let selectedSym = null
 let status = { online: false, provider: 'local', checked: false }
 
@@ -70,6 +71,8 @@ export const market = {
   subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn) },
   onListing(fn) { listingListeners.add(fn); return () => listingListeners.delete(fn) },
   onWin(fn) { winListeners.add(fn); return () => winListeners.delete(fn) },
+  /** $UPW settings pushed by the server the moment its upw.json changes. */
+  onUpw(fn) { upwListeners.add(fn); return () => upwListeners.delete(fn) },
   getVersion: () => version,
   status: () => status,
 
@@ -190,6 +193,7 @@ async function startOnline() {
       addToken({ ...fromApi(t), isNew: true })
     },
     win(call) { winListeners.forEach((fn) => fn(call)) },
+    upw(info) { upwListeners.forEach((fn) => fn(info)) },
   })
   return close
 }

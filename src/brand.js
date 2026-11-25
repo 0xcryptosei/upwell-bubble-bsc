@@ -1,5 +1,6 @@
-// One place for the brand used by the landing page.
-// Links and the token contract can also be set in .env (VITE_X_URL, VITE_TELEGRAM_URL, VITE_TOKEN_CA).
+// One place for the brand.
+// The $UPW contract address and buy link are NOT stored here: they come only from the backend (its upw.json file).
+// The X / Telegram links below are fallbacks for when the server cannot be reached (the backend's values win).
 const env = import.meta.env
 
 export const BRAND = {
@@ -8,12 +9,7 @@ export const BRAND = {
   token: 'UPW', // shown as $UPW
   appUrl: 'app.upwell.xyz',
 
-  // $UPW contract address on BNB Chain. Empty until the token is launched.
-  ca: env.VITE_TOKEN_CA || '',
-  // Where to buy $UPW (e.g. its Flap.sh page). Empty until launch.
-  buyUrl: env.VITE_BUY_URL || '',
-
-  // Official community links. Empty = shown as "coming soon".
-  x: env.VITE_X_URL || '',
-  telegram: env.VITE_TELEGRAM_URL || '',
+  // Official community links
+  x: env.VITE_X_URL || 'https://x.com/upwellpro',
+  telegram: env.VITE_TELEGRAM_URL || 'https://t.me/upwellorg',
 }
