@@ -548,6 +548,7 @@ tr.gap td{padding:4px 10px;color:var(--muted);text-align:center;font-size:12px}
 .dc-body{display:flex;flex-direction:column;gap:var(--gap);min-width:0}
 .dc-sec{scroll-margin-top:calc(var(--hdr-h) + 70px);padding:24px 26px}
 .dc-sec h2{font-size:21px;letter-spacing:-.02em;margin:0 0 12px}
+.dc-h3{font-size:15px;letter-spacing:-.01em;margin:22px 0 10px;color:var(--navy)}
 .dc-sec p{margin:0 0 12px;font-size:14.5px;line-height:1.65;color:#2E4F60}
 .dc-sec p:last-child{margin-bottom:0}
 .dc-sec em{font-style:normal;color:var(--navy);font-weight:600}

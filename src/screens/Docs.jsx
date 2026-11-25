@@ -43,10 +43,19 @@ const CHECKS = [
 ]
 
 const CONTRACTS = [
-  ['RewardVault', 'Holds the BNB from the $UPW tax. Splits it weekly and pays callers who claim with a Merkle proof.'],
-  ['UpwellStaking', `Stake $${T}, earn BNB from the vault. No lock.`],
-  ['CallLedger', 'Stores one Merkle root of every judged call per week, so any call can be proven on-chain.'],
+  ['RewardVault', 'Holds the BNB from the $UPW tax. Closes each week, splits it 60 / 25 / 10 / 5, and pays callers who claim with a Merkle proof.'],
+  ['UpwellStaking', `Stake $${T}, earn BNB from the vault, paid out evenly over 7 days. No lock.`],
+  ['CallLedger', 'Stores one Merkle root of every judged call per week, so any call or record can be proven on-chain.'],
   ['UpwellBadges', 'Soulbound (non-transferable) badges, one of each per wallet.'],
+]
+
+const SAFEGUARDS = [
+  ['One claim per week', 'Each reward is tied to your wallet, the week and the amount. It can be claimed once, only by you, and never in another week.'],
+  ['Never over-paid', 'A week can only pay out what was set aside for it. The rest of the callers\' share stays with callers for the next week.'],
+  ['Weeks close in order', 'Each close names the week it closes, so the same week can never be closed twice.'],
+  ['Payouts never block a week', 'If a payout wallet or the staking contract fails, its share is held in the vault and sent later. Callers are still paid.'],
+  ['Fair staking', 'Staking rewards stream over 7 days by time staked, so staking just before a payout and leaving right after earns almost nothing.'],
+  ['Separate keys', 'Settings belong to a multisig. The server key can only close weeks: it can never touch BNB already set aside for claims.'],
 ]
 
 function useActiveSection() {
@@ -169,17 +178,18 @@ export default function Docs() {
 
           <section id="rewards" className="glass card dc-sec">
             <h2>Weekly rewards</h2>
-            <p>The ${T} buy and sell tax fills the <b>Reward Vault</b> contract. Every Monday at 00:00 UTC the week closes and what arrived that week is split:</p>
+            <p>The ${T} buy and sell tax fills the <b>Reward Vault</b>. Every Monday at 00:00 UTC the week closes and what arrived that week is split:</p>
             <div className="split" aria-hidden="true">
               <i style={{ width: '60%', background: 'linear-gradient(90deg,#2EC5EC,#0A8BD0)' }} /><i style={{ width: '25%', background: '#0A6FAF' }} /><i style={{ width: '10%', background: '#0B3B5C' }} /><i style={{ width: '5%', background: '#8FB3C3' }} />
             </div>
             <ul className="dc-list">
-              <li><b>60% top callers</b>: the top 100 on the weekly board share it in proportion to their score.</li>
-              <li><b>25% ${T} stakers</b>: shared by everyone staking (Phase 2).</li>
+              <li><b>60% top callers</b>: the top 100 on the weekly board share it in proportion to their score. Anything not handed out stays with callers and is added to next week's pool.</li>
+              <li><b>25% ${T} stakers</b>: shared by everyone staking, paid out evenly over the following 7 days (Phase 2).</li>
               <li><b>10% buyback &amp; burn</b>: buys ${T} and burns it.</li>
               <li><b>5% operations</b>: data, hosting and audits.</li>
             </ul>
-            <p><b>Claiming:</b> your share appears on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button> once the week is published on-chain. You claim it to your wallet with one transaction (you pay the network fee). Unclaimed rewards can be recycled into a later week after <b>90 days</b>.</p>
+            <p><b>Today:</b> the vault shows this week's real ${T} tax income, read live from the token's tax contract on BNB Chain (anyone can verify it on BscScan). Before ${T} launches it shows a simulated preview. After each week closes, the {BRAND.name} team sends the callers' rewards to the wallets of the top callers. Your estimated share for the week is on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button>.</p>
+            <p><b>Once the vault is on-chain:</b> your share appears on Rewards when the week is published. You claim it to your wallet with one transaction (you pay the network fee), for one week or several at once. Unclaimed rewards return to the callers' pool after <b>90 days</b>.</p>
           </section>
 
           <section id="safety" className="glass card dc-sec">
@@ -210,7 +220,11 @@ export default function Docs() {
             <ul className="dc-badges">
               {CONTRACTS.map(([n, d]) => <li key={n}><b className="mono">{n}</b><span>{d}</span></li>)}
             </ul>
-            <p className="dc-note">The contracts are not deployed yet. Their addresses will be listed here at launch.</p>
+            <h3 className="dc-h3">How rewards are protected</h3>
+            <ul className="dc-badges">
+              {SAFEGUARDS.map(([n, d]) => <li key={n}><b>{n}</b><span>{d}</span></li>)}
+            </ul>
+            <p className="dc-note">The contracts are tested (58 tests, including attack and randomised tests) and have had an internal security review. They are not deployed yet: they go live after an external audit, and their addresses will be listed here.</p>
           </section>
 
           <section id="risks" className="glass card dc-sec">

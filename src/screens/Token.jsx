@@ -6,6 +6,7 @@ import { BRAND } from '../brand'
 import { Logo, Tag, Tilt } from '../components/Bits'
 import { IconAlert, IconCopy } from '../components/Icons'
 import { fmtUsd, fmtPct, fmtInt } from '../lib/format'
+import { weiToBnb } from '../lib/api'
 
 const SPLIT = [
   { label: 'Top callers', pct: 60, color: '#1BAAE0', bar: 'linear-gradient(90deg,#2EC5EC,#0A8BD0)', text: 'Paid in BNB every week, by leaderboard score.' },
@@ -78,6 +79,20 @@ export default function Token() {
             <>
               <div className="tk-vault-amt mono">{vault.bnb.toFixed(2)}<small>BNB</small></div>
               <a className="muted" href={vault.explorer} target="_blank" rel="noreferrer noopener" style={{ fontSize: 13 }}>Live from the contract · Verify on BscScan ↗</a>
+            </>
+          ) : vault?.source === 'tax' ? (
+            <>
+              <div className="tk-vault-amt mono">{vault.tax.isBnb ? vault.bnb.toFixed(2) : '0.00'}<small>BNB</small></div>
+              <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+                {vault.tax.isBnb
+                  ? <><Tag tone="up">Live</Tag> This week's $UPW tax income, read from the token's tax contract. All-time: {weiToBnb(vault.tax.totalWei).toFixed(2)} BNB · <a href={vault.explorer} target="_blank" rel="noreferrer noopener">Verify ↗</a></>
+                  : <>The $UPW tax is paid in {vault.tax.currency}, not BNB.</>}
+              </p>
+            </>
+          ) : vault?.source === 'demo' ? (
+            <>
+              <div className="tk-vault-amt mono">{vault.bnb.toFixed(2)}<small>BNB</small></div>
+              <p className="muted" style={{ margin: 0, fontSize: 13 }}><Tag tone="gold">Preview</Tag> Simulated balance for this week. It resets every Monday when the week is paid out.</p>
             </>
           ) : (
             <>

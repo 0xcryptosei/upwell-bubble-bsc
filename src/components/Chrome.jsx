@@ -130,8 +130,13 @@ export function Header() {
             <span className="vl">Reward vault</span><b>{vault.bnb.toFixed(2)} BNB</b>
           </a>
         )}
+        {vault?.source === 'tax' && vault.tax?.isBnb && (
+          <a className="vault-pill" href={vault.explorer} target="_blank" rel="noreferrer noopener" title="This week's real $UPW tax income. Verify on BscScan" style={{ textDecoration: 'none' }}>
+            <span className="vl">Reward vault</span><b>{vault.bnb.toFixed(2)} BNB</b>
+          </a>
+        )}
         {vault?.source === 'demo' && (
-          <div className="vault-pill" title="Test value: the vault contract is not deployed yet"><span className="vl">Vault (test)</span><b>{vault.bnb.toFixed(2)} BNB</b></div>
+          <div className="vault-pill" title="Preview: simulated balance for this week"><span className="vl">Reward vault · preview</span><b>{vault.bnb.toFixed(2)} BNB</b></div>
         )}
         <WalletButton />
       </div>

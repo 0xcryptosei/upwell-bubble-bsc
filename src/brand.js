@@ -7,7 +7,7 @@ export const BRAND = {
   name: 'Upwell',
   tagline: 'Where early calls rise.',
   token: 'UPW', // shown as $UPW
-  appUrl: 'app.upwell.xyz',
+  appUrl: 'up-well.space',
 
   // Official community links
   x: env.VITE_X_URL || 'https://x.com/upwellpro',

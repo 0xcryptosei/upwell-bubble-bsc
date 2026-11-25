@@ -21,26 +21,45 @@ function untilPayout(now = Date.now()) {
   return remain(next - now)
 }
 
+/** Where the live vault number comes from: this week's real $UPW tax income. */
+function TaxNote({ vault }) {
+  const t = vault.tax
+  const since = t.since > t.weekStart ? new Date(t.since).toUTCString().slice(5, 22) + ' UTC' : 'Monday 00:00 UTC'
+  if (!t.isBnb) {
+    return <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>The $UPW tax is paid in {t.currency}, not BNB, so it is not counted here.</p>
+  }
+  return (
+    <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>
+      <Tag tone="up">Live</Tag> $UPW tax income since {since}
+      {t.lastWeekWei != null && <> · last week {weiToBnb(t.lastWeekWei).toFixed(3)} BNB</>}
+      {' · '}<a href={vault.explorer} target="_blank" rel="noreferrer noopener">Verify on BscScan ↗</a>
+    </p>
+  )
+}
+
 export default function Rewards() {
   const { wallet, toast, needWallet, online, session, vault } = useApp()
   const [demoClaimed, setDemoClaimed] = useState(false)
   const [mine, setMine] = useState(null) // { claimableWei, epochs }
+  const [myWeek, setMyWeek] = useState(null) // { rank, est } from this week's leaderboard
   const [cfg, setCfg] = useState(null)
   const [busy, setBusy] = useState(false)
 
   const load = useCallback(() => {
     if (!online || !session) { setMine(null); return }
     api('/me/rewards').then(setMine).catch(() => setMine({ claimableWei: '0', epochs: [] }))
+    api('/leaderboard?period=weekly&limit=1').then((r) => setMyWeek(r.me ? { rank: r.me.rank, est: weiToBnb(r.me.estRewardWei || '0') } : null)).catch(() => {})
   }, [online, session])
   useEffect(() => { load() }, [load])
   useEffect(() => { if (online) api('/config').then(setCfg).catch(() => {}) }, [online])
 
   // ---------- amounts ----------
-  // chain = live contract balance, test = DEMO_VAULT_BNB, soon = no vault deployed (or server unreachable)
-  const vaultState = !online ? 'soon' : !vault ? 'loading' : vault.source === 'chain' ? 'chain' : vault.source === 'demo' ? 'test' : 'soon'
+  // chain = live contract balance, test = preview (mock vault on the server), soon = no vault (or server unreachable)
+  const vaultState = !online ? 'soon' : !vault ? 'loading' : vault.source === 'chain' ? 'chain' : vault.source === 'tax' ? 'tax' : vault.source === 'demo' ? 'test' : 'soon'
   const vaultBnb = vault ? vault.bnb : null
   const pending = mine?.epochs.filter((e) => !e.onChain) || []
-  const claimable = mine?.epochs.filter((e) => e.onChain && !e.claimed) || []
+  // only weeks the vault will pay right now (not claimed, expired or recycled): one bad week would fail the whole claim
+  const claimable = mine?.epochs.filter((e) => e.claimable ?? (e.onChain && e.claimed === false)) || []
   const claimBnb = online ? weiToBnb(mine?.claimableWei || '0') : 0.42
   const pendingBnb = pending.reduce((a, e) => a + weiToBnb(e.amountWei), 0)
 
@@ -53,7 +72,12 @@ export default function Rewards() {
     }
     if (!claimable.length) return
     if (!cfg?.contracts?.vault) return toast('The Reward Vault is not deployed yet', 'info')
-    if (!activeWallet()) return toast('Open your wallet and connect again to claim.', 'wallet')
+    const w = activeWallet()
+    if (!w) return toast('Open your wallet and connect again to claim.', 'wallet')
+    // the proofs are for the signed-in address: claiming from another account would fail on-chain
+    if (session?.address && w.address?.toLowerCase() !== session.address.toLowerCase()) {
+      return toast(`Switch your wallet to ${session.address.slice(0, 6)}…${session.address.slice(-4)} to claim.`, 'wallet')
+    }
     setBusy(true)
     try {
       const hash = await claimRewards({ vault: cfg.contracts.vault, epochs: claimable })
@@ -79,6 +103,13 @@ export default function Rewards() {
         ? `${pendingBnb.toFixed(4)} BNB from week ${pending.map((e) => e.epoch).join(', ')} becomes claimable when the week is published on-chain.`
         : 'Finish the week in the top 100 to earn a share of the vault.'
     }
+    // preview: no on-chain claims; show this week's estimated share instead
+    if (session && (vaultState === 'test' || vaultState === 'tax') && !claimable.length) {
+      claimLabel = myWeek?.est > 0 ? `Rank #${myWeek.rank} this week` : 'Not ranked this week yet'
+      claimNote = myWeek?.est > 0
+        ? `Estimated share: ${myWeek.est.toFixed(4)} BNB, sent to your wallet by the Upwell team after Monday.`
+        : 'Make winning calls this week to earn a share of the vault.'
+    }
   }
 
   return (
@@ -96,7 +127,8 @@ export default function Rewards() {
             ? <div className="vault-amt" style={{ fontSize: 30 }}>Opens at launch</div>
             : <div className="vault-amt">{vaultBnb == null ? '…' : vaultBnb.toFixed(2)}<small>BNB</small></div>}
           {vaultState === 'chain' && <a className="muted" href={vault.explorer} target="_blank" rel="noreferrer noopener" style={{ display: 'inline-block', marginBottom: 8, fontSize: 13 }}>Live from the RewardVault contract · Verify on BscScan ↗</a>}
-          {vaultState === 'test' && <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}><Tag tone="gold">Test value</Tag> Not real BNB: the vault contract is not deployed yet.</p>}
+          {vaultState === 'tax' && <TaxNote vault={vault} />}
+          {vaultState === 'test' && <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}><Tag tone="gold">Preview</Tag> Simulated balance for this week. Rewards are sent to the top callers by the Upwell team after each Monday.</p>}
           {vaultState === 'soon' && <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>The balance will be read live from the RewardVault contract on BNB Chain, so anyone can verify it.</p>}
           <p className="muted" style={{ margin: 0 }}>Funded by $UPW buy and sell tax on Flap.sh. Split every week:</p>
           <div className="split" aria-hidden="true">

@@ -3,6 +3,7 @@ import { useApp } from '../store/AppContext'
 import { fmtUsd } from '../lib/format'
 import { Logo, Tag, Tilt } from './Bits'
 import { IconClose, IconTelegram, IconX } from './Icons'
+import { BRAND } from '../brand'
 
 export default function CallModal() {
   const { confirmed: c, setConfirmed, toast, me } = useApp()
@@ -39,7 +40,7 @@ export default function CallModal() {
             <div><span>Caller</span><b style={{ fontFamily: 'var(--head)' }}>{me?.name}</b></div>
             <div><span>Win rate</span><b>{Math.round((me?.winRate ?? 0) * 100)}%</b></div>
           </div>
-          <div className="ref"><span>app.upwell.xyz/u/{me?.fullAddress ? me.fullAddress.slice(0, 8) : 'you'}</span><Tag tone="aqua">Referral</Tag></div>
+          <div className="ref"><span>{BRAND.appUrl}/u/{me?.fullAddress ? me.fullAddress.slice(0, 8) : 'you'}</span><Tag tone="aqua">Referral</Tag></div>
         </Tilt>
         <div className="modal-actions">
           <button className="btn-water" onClick={() => toast('Share card ready · opening X', 'check')}><IconX />Share on X</button>
