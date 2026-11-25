@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+ <title>Upwell</title>
+ <defs>
+  <radialGradient id="uwb" cx="50%" cy="62%" r="62%"><stop offset="0" stop-color="#46D3F4"/><stop offset=".62" stop-color="#0A8BD0"/><stop offset="1" stop-color="#065A8E"/></radialGradient>
+  <linearGradient id="uwhl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <radialGradient id="uwbg" cx="50%" cy="100%" r="60%"><stop offset="0" stop-color="#9FEFFF" stop-opacity=".55"/><stop offset="1" stop-color="#9FEFFF" stop-opacity="0"/></radialGradient>
+  <clipPath id="uwclip"><circle cx="256" cy="256" r="240"/></clipPath>
+ </defs>
+ <circle cx="256" cy="256" r="240" fill="url(#uwb)"/>
+ <g clip-path="url(#uwclip)">
+  <ellipse cx="256" cy="520" rx="260" ry="170" fill="url(#uwbg)"/>
+  <ellipse cx="190" cy="118" rx="150" ry="74" transform="rotate(-24 190 118)" fill="url(#uwhl)"/>
+ </g>
+ <circle cx="256" cy="256" r="236" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="5"/>
+ <g fill="none" stroke="#fff" stroke-linecap="round">
+  <circle cx="226" cy="338" r="62" stroke-width="22"/>
+  <circle cx="314" cy="212" r="38" stroke-width="17"/>
+  <circle cx="238" cy="124" r="21" stroke-width="12"/>
+ </g>
+ <g fill="#fff"><circle cx="198" cy="312" r="9"/><circle cx="300" cy="198" r="6"/></g>
+</svg>
