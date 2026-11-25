@@ -207,7 +207,7 @@ export function createMapEngine({ canvas, stage, getTokens, getFilter, getSelect
       else {
         // drift speed is capped, but a push from the water above the cap fades out smoothly instead of stopping dead
         const sp = Math.hypot(b.vx, b.vy), max = reducedMotion ? 0 : 16
-        if (sp > max && sp > 0) { const k = reducedMotion ? max / sp : Math.max(max / sp, 1 - dt * 1.6); b.vx *= k; b.vy *= k }
+        if (sp > max && sp > 0) { const k = reducedMotion ? max / sp : Math.max(max / sp, 1 - dt * 1.15); b.vx *= k; b.vy *= k }
       }
       b.vx *= 0.992; b.vy *= 0.992
       b.x += b.vx * dt; b.y += b.vy * dt
@@ -442,7 +442,10 @@ export function createMapEngine({ canvas, stage, getTokens, getFilter, getSelect
     const [x, y] = local(e)
     const b = hit(x, y)
     if (b) { splash(b.x, b.y, b.r * 0.55, 0.9, b.r); onSelect(b.t.sym) }
-    else splash(x, y, 40, 1.6, 4)
+    else {
+      splash(x, y, 40, 1.6, 4)
+      if (waves.length) waves[waves.length - 1].s *= 1.8 // a click on open water pushes the bubbles harder than rain
+    }
   }
 
   // ---- start ----

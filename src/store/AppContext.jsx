@@ -222,8 +222,8 @@ export function AppProvider({ children }) {
       buyUrl: upwInfo?.buyUrl || null,
       x: upwInfo?.x || BRAND.x || null,
       telegram: upwInfo?.telegram || BRAND.telegram || null,
-      explorer: ca ? `https://bscscan.com/token/${ca}` : null,
-      chart: ca ? `https://www.geckoterminal.com/bsc/tokens/${ca}` : null,
+      explorer: upwInfo?.explorer || null,
+      chart: upwInfo?.chart || null, // GMGN token page, from the backend
       market: upwInfo?.market || null,
       loaded: !!upwInfo,
     }

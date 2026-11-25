@@ -104,12 +104,12 @@ function RisingNow({ onPick }) {
   )
 }
 
-/** $UPW contract address with a copy button, or "coming soon" before launch. */
+/** $UPW contract address (in full) with a copy button, or "coming soon" before launch. */
 function ContractChip({ className = '' }) {
   const { toast, upw } = useApp()
   const ca = upw.ca
-  // until the server has answered, show nothing in the chip rather than a "Coming soon" that may be wrong
-  if (!upw.loaded) return <span className={`lp-ca mono is-wait ${className}`} aria-hidden="true"><b>CA</b><i /></span>
+  // invisible until the server has answered, then it fades in once: it never resizes or jumps on screen
+  if (!upw.loaded) return <span className={`lp-ca mono is-wait ${className}`} aria-hidden="true"><b>CA</b></span>
   if (!ca) return <span className={`lp-ca mono ${className}`} title="The $UPW contract address is published at launch"><b>CA</b>Coming soon</span>
   const copy = async () => {
     try { await navigator.clipboard?.writeText(ca); toast('Contract address copied', 'check') }
@@ -117,7 +117,7 @@ function ContractChip({ className = '' }) {
   }
   return (
     <button className={`lp-ca mono ${className}`} onClick={copy} title={`Copy ${ca}`} aria-label={`Copy contract address ${ca}`}>
-      <b>CA</b>{ca.slice(0, 6)}…{ca.slice(-4)}<IconCopy />
+      <b>CA</b><span className="lp-ca-addr">{ca}</span><IconCopy />
     </button>
   )
 }
@@ -132,10 +132,21 @@ export default function Landing() {
   const { go, openToken, upw } = useApp()
   const launch = (sym) => { go('bubbles'); if (sym) setTimeout(() => openToken(sym), 0) }
 
-  // the landing is one screen: no page scroll while it is shown
+  // the landing is one screen: no page scroll while it is shown, unless the window is too small to fit it all
   useEffect(() => {
-    document.documentElement.classList.add('lp-lock')
-    return () => document.documentElement.classList.remove('lp-lock')
+    const html = document.documentElement
+    html.classList.add('lp-lock')
+    const fit = () => {
+      const lp = document.querySelector('.lp')
+      if (!lp) return
+      html.classList.remove('lp-scroll')
+      if (lp.scrollHeight > lp.clientHeight + 1) html.classList.add('lp-scroll')
+    }
+    fit()
+    const ro = 'ResizeObserver' in window ? new ResizeObserver(fit) : null
+    ro?.observe(document.querySelector('.lp-main') || document.body)
+    window.addEventListener('resize', fit)
+    return () => { ro?.disconnect(); window.removeEventListener('resize', fit); html.classList.remove('lp-lock', 'lp-scroll') }
   }, [])
 
   return (

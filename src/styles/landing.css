@@ -3,6 +3,9 @@
   position:relative;height:100vh;height:100svh;min-height:600px;display:grid;grid-template-rows:auto 1fr auto auto;
   color:var(--ink);background:#E2F4FB;overflow:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html.lp-lock,html.lp-lock body{overflow:hidden;height:100%;overscroll-behavior:none}
+/* when the screen is too small for everything, the page scrolls instead of cutting content off (set by Landing.jsx) */
+html.lp-lock.lp-scroll,html.lp-lock.lp-scroll body{overflow:auto;height:auto}
+html.lp-scroll .lp{height:auto;min-height:100svh}
 .lp h1{margin:0;color:var(--navy)}
 .lp button{-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .lp>*:not(.lp-water){position:relative;z-index:1}
@@ -93,7 +96,7 @@ html.lp-lock,html.lp-lock body{overflow:hidden;height:100%;overscroll-behavior:n
 .lp-legal{margin:0;padding:0 0 calc(12px + env(safe-area-inset-bottom));text-align:center;font-size:11px;color:var(--ink-3)}
 
 /* ---------- tablet & phone: stack, still one screen ---------- */
-@media (max-width:900px){
+@media (max-width:760px){
   .lp-main{grid-template-columns:minmax(0,1fr);align-content:center;gap:24px}
   .lp-top-tag,.lp-hint{display:none}
   .lp-copy h1{font-size:clamp(40px,9.6vw,72px)}
@@ -130,8 +133,11 @@ html.lp-lock,html.lp-lock body{overflow:hidden;height:100%;overscroll-behavior:n
 span.lp-ca{cursor:default;color:var(--ink-3)}
 .lp-ca b{display:inline-grid;place-items:center;height:24px;padding:0 8px;border-radius:999px;background:var(--navy);color:#fff;font-size:10.5px;letter-spacing:.08em}
 .lp-ca svg{width:14px;height:14px;color:var(--muted)}
-.lp-ca.is-wait{cursor:default}
-.lp-ca.is-wait i{display:block;width:84px;height:9px;border-radius:5px;background:rgba(11,59,92,.1)}
+.lp-ca{animation:lpCaIn .4s ease-out both}
+.lp-ca.is-wait{visibility:hidden;animation:none}
+@keyframes lpCaIn{from{opacity:0}to{opacity:1}}
+.lp-ca-addr{white-space:nowrap;letter-spacing:.01em}
+@media (prefers-reduced-motion:reduce){.lp-ca{animation:none}}
 .lp-social{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.95);background:rgba(255,255,255,.6);color:var(--navy);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);transition:background .15s,transform .15s}
 .lp-social svg{width:15px;height:15px}
 .lp-social.off{opacity:.5;cursor:default}
@@ -142,11 +148,16 @@ span.lp-ca{cursor:default;color:var(--ink-3)}
   .lp-social{width:32px;height:32px}
 }
 
-/* CA sits top-center; on phones it moves down next to the socials */
+/* CA sits top-center on wide screens; on smaller ones it moves down next to the socials */
 .lp-bottom-ca{display:none!important}
 .lp-top-ca{position:absolute;left:50%;top:calc(20px + env(safe-area-inset-top));transform:translateX(-50%)}
-@media (max-width:640px){
+/* keep the centring when hovered (the shared hover lift would otherwise replace this transform) */
+@media (hover:hover){.lp-top-ca:is(button):hover{transform:translate(-50%,-1px)}}
+/* the full address needs room: a bit smaller on medium screens, and below 900px it moves down to the bottom strip */
+@media (max-width:1100px){.lp-top-ca{font-size:11px;gap:6px}}
+@media (max-width:900px){
   .lp-top-ca{display:none!important}
+  .lp-meta{flex-wrap:wrap;justify-content:center;max-width:100%}
   .lp-bottom-ca{display:inline-flex!important}
 }
 
@@ -154,3 +165,10 @@ span.lp-ca{cursor:default;color:var(--ink-3)}
 .lp-top-right{display:flex;align-items:center;gap:6px}
 .lp-link{background:none;border:0;padding:8px 12px;border-radius:999px;font:600 14px var(--head);color:var(--navy);cursor:pointer}
 @media (hover:hover){.lp-link:hover{background:rgba(255,255,255,.6)}}
+
+/* phones: the full address on one line, sized to fit a 320px-wide screen */
+@media (max-width:640px){
+  .lp-bottom-ca{max-width:100%;font-size:clamp(8.5px,2.75vw,11px);gap:5px;padding:0 9px 0 4px}
+  .lp-bottom-ca b{padding:0 6px;font-size:9.5px}
+  .lp-bottom-ca svg{flex:none}
+}
