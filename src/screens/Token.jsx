@@ -84,7 +84,11 @@ export default function Token() {
             <>
               <div className="tk-vault-amt mono">{vault.tax.isBnb ? vault.bnb.toFixed(2) : '0.00'}<small>BNB</small></div>
               <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-                {vault.tax.isBnb
+                {vault.tax.isBnb && !vault.tax.marketAddress
+                  ? <>No creator wallet: all of this token's tax goes to holders as dividends ({weiToBnb(vault.tax.dividendWei).toFixed(3)} BNB so far), so none reaches the vault.</>
+                  : vault.tax.isBnb && vault.tax.mode === 'allTime'
+                  ? <><Tag tone="up">Live</Tag> All-time $UPW tax income, read from the token's tax contract. Weekly totals start Monday. · <a href={vault.explorer} target="_blank" rel="noreferrer noopener">Verify ↗</a></>
+                  : vault.tax.isBnb
                   ? <><Tag tone="up">Live</Tag> This week's $UPW tax income, read from the token's tax contract. All-time: {weiToBnb(vault.tax.totalWei).toFixed(2)} BNB · <a href={vault.explorer} target="_blank" rel="noreferrer noopener">Verify ↗</a></>
                   : <>The $UPW tax is paid in {vault.tax.currency}, not BNB.</>}
               </p>

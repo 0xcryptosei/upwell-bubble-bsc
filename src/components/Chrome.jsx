@@ -130,8 +130,8 @@ export function Header() {
             <span className="vl">Reward vault</span><b>{vault.bnb.toFixed(2)} BNB</b>
           </a>
         )}
-        {vault?.source === 'tax' && vault.tax?.isBnb && (
-          <a className="vault-pill" href={vault.explorer} target="_blank" rel="noreferrer noopener" title="This week's real $UPW tax income. Verify on BscScan" style={{ textDecoration: 'none' }}>
+        {vault?.source === 'tax' && vault.tax?.isBnb && vault.tax?.marketAddress && (
+          <a className="vault-pill" href={vault.explorer} target="_blank" rel="noreferrer noopener" title={`${vault.tax.mode === 'allTime' ? 'All-time' : "This week's"} real $UPW tax income. Verify on BscScan`} style={{ textDecoration: 'none' }}>
             <span className="vl">Reward vault</span><b>{vault.bnb.toFixed(2)} BNB</b>
           </a>
         )}

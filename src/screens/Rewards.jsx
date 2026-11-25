@@ -28,10 +28,29 @@ function TaxNote({ vault }) {
   if (!t.isBnb) {
     return <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>The $UPW tax is paid in {t.currency}, not BNB, so it is not counted here.</p>
   }
+  if (!t.marketAddress) {
+    // the token's tax has no creator wallet: it all goes to holders (or liquidity), never to the vault
+    return (
+      <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>
+        This token's tax has no creator wallet: all of it goes to holders as dividends
+        {BigInt(t.dividendWei) > 0n && <> ({weiToBnb(t.dividendWei).toFixed(3)} BNB so far)</>}, so none reaches the vault.
+      </p>
+    )
+  }
+  if (t.mode === 'allTime') {
+    return (
+      <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>
+        <Tag tone="up">Live</Tag> All-time $UPW tax income. Weekly totals start Monday 00:00 UTC.
+        {' · '}<a href={vault.explorer} target="_blank" rel="noreferrer noopener">Verify on BscScan ↗</a>
+      </p>
+    )
+  }
   return (
     <p className="muted" style={{ margin: '0 0 8px', fontSize: 13 }}>
       <Tag tone="up">Live</Tag> $UPW tax income since {since}
       {t.lastWeekWei != null && <> · last week {weiToBnb(t.lastWeekWei).toFixed(3)} BNB</>}
+      {' · '}all-time {weiToBnb(t.totalWei).toFixed(3)} BNB
+      {t.since > t.weekStart && <> (this week is counted from when the server first saw the token; full weeks start next Monday)</>}
       {' · '}<a href={vault.explorer} target="_blank" rel="noreferrer noopener">Verify on BscScan ↗</a>
     </p>
   )
