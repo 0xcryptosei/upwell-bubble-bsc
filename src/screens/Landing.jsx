@@ -77,15 +77,15 @@ function RisingNow({ onPick }) {
     .sort((a, b) => b.chg - a.chg)
     .slice(0, 5)
   return (
-    <aside className="lp-live-panel lp-solid" aria-label="Tokens rising now">
+    <aside className={`lp-live-panel lp-solid ${rows.length ? 'is-ready' : 'is-loading'}`} aria-label="Tokens rising now" aria-busy={!rows.length}>
       <header>
         <span className="lp-live-dot" aria-hidden="true" />
         <span className="title">Rising now</span>
-        <span className="sub mono">BNB Chain · 24h</span>
+        <span className="sub mono">{rows.length ? 'BNB Chain · 24h' : 'Loading live market'}</span>
       </header>
       <ol>
         {rows.length ? rows.map((t, i) => (
-          <li key={t.id}>
+          <li key={t.id} style={{ '--i': i }}>
             <button onClick={() => onPick(t.sym)} aria-label={`Call $${t.sym}`}>
               <span className="rk mono">{i + 1}</span>
               <TokenIcon t={t} size={32} />
@@ -94,7 +94,10 @@ function RisingNow({ onPick }) {
               <span className="go">Call<Arrow /></span>
             </button>
           </li>
-        )) : Array.from({ length: 5 }, (_, i) => <li key={i} className="ghost"><span /></li>)}
+        )) : Array.from({ length: 5 }, (_, i) => (
+          // empty rows that hold the panel's size until the data arrives (then the real rows drop in)
+          <li key={i} className="ghost" aria-hidden="true" />
+        ))}
       </ol>
       <footer className="mono">Free to call · win at 1.2x · paid in BNB</footer>
     </aside>

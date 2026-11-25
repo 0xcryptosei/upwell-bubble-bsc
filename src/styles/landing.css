@@ -71,7 +71,12 @@ html.lp-lock,html.lp-lock body{overflow:hidden;height:100%;overscroll-behavior:n
   .lp-live-panel li button:hover{background:rgba(255,255,255,.8)}
   .lp-live-panel li button:hover .go{width:46px;opacity:1}
 }
-.lp-live-panel li.ghost span{display:block;height:52px;margin:0 10px;border-bottom:1px solid var(--line-d);opacity:.4}
+/* loading: empty rows keep the panel at its final size (no placeholders) */
+.lp-live-panel li.ghost{display:block;height:60.25px}
+/* data arrived: rows drop down into the panel one after another */
+.lp-live-panel.is-ready li{animation:lpRowDrop .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0) * .07s)}
+@keyframes lpRowDrop{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.lp-live-panel.is-ready li{animation:none}}
 .lp-live-panel footer{margin:6px 10px 0;padding-top:12px;border-top:1px solid var(--line-d);font-size:11px;letter-spacing:.06em;color:var(--ink-3)}
 
 /* ---------- bottom strip ---------- */
@@ -105,6 +110,7 @@ html.lp-lock,html.lp-lock body{overflow:hidden;height:100%;overscroll-behavior:n
   .lp-live-panel header{padding:0 8px 8px}
   .lp-live-panel li:nth-child(n+4){display:none}
   .lp-live-panel li button{padding:8px}
+  .lp-live-panel li.ghost{height:56.25px}
   .lp-live-panel footer{display:none}
   .lp-bottom{justify-content:center;padding:12px 0 8px}
   .lp-steps{justify-content:center;gap:6px 14px;font-size:10.5px}
