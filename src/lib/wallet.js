@@ -1,7 +1,7 @@
 // Wallet connection without a framework, using two standards:
 //   - EIP-6963: installed browser wallets announce themselves (with their real name and icon)
 //   - WalletConnect v2: QR code on desktop, deep link into the wallet app on phones
-import { createWalletClient, custom, parseAbi, toHex } from 'viem'
+import { createPublicClient, createWalletClient, custom, parseAbi, toHex } from 'viem'
 import { bsc, bscTestnet } from 'viem/chains'
 
 export const WC_PROJECT_ID = import.meta.env.VITE_WC_PROJECT_ID || ''
@@ -206,3 +206,43 @@ export async function claimRewards({ vault, epochs }) {
     args: [epochs.map((e) => BigInt(e.epoch)), epochs.map((e) => BigInt(e.amountWei)), epochs.map((e) => e.proof)],
   })
 }
+
+// ---------- $UPW staking (UpwellStaking contract) ----------
+const STAKING_ABI = parseAbi([
+  'function stake(uint256 amount)',
+  'function withdraw(uint256 amount)',
+  'function claim()',
+  'function exit()',
+])
+const ERC20_APPROVE_ABI = parseAbi(['function approve(address spender, uint256 amount) returns (bool)'])
+
+/** Send one transaction from the connected wallet and wait until it is confirmed. */
+async function sendAndWait({ address, abi, functionName, args = [] }) {
+  if (!active) throw new Error('Connect your wallet again first.')
+  await ensureChain(active.provider)
+  const wallet = createWalletClient({ chain: CHAIN, transport: custom(active.provider), account: active.address })
+  const hash = await wallet.writeContract({ address, abi, functionName, args })
+  const pub = createPublicClient({ chain: CHAIN, transport: custom(active.provider) })
+  const receipt = await pub.waitForTransactionReceipt({ hash })
+  if (receipt.status !== 'success') throw new Error('The transaction failed on-chain.')
+  return hash
+}
+
+/**
+ * Stake `amount` (token units, bigint). If staking may not spend that much yet, the wallet first asks to approve
+ * exactly that amount (two confirmations: approve, then stake). onStep('approve' | 'stake') reports progress.
+ */
+export async function stakeUpw({ staking, token, amount, allowance, onStep }) {
+  if (BigInt(allowance) < amount) {
+    onStep?.('approve')
+    await sendAndWait({ address: token, abi: ERC20_APPROVE_ABI, functionName: 'approve', args: [staking, amount] })
+  }
+  onStep?.('stake')
+  return sendAndWait({ address: staking, abi: STAKING_ABI, functionName: 'stake', args: [amount] })
+}
+
+/** Unstake `amount` (bigint). No lock: works any time. */
+export const unstakeUpw = ({ staking, amount }) => sendAndWait({ address: staking, abi: STAKING_ABI, functionName: 'withdraw', args: [amount] })
+
+/** Claim the BNB earned from staking. */
+export const claimStakingRewards = ({ staking }) => sendAndWait({ address: staking, abi: STAKING_ABI, functionName: 'claim' })

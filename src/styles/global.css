@@ -589,3 +589,18 @@ img.bub.tok-img::after{display:none}
 
 /* 3D water under the bubble map (pointer events go to the bubble canvas on top) */
 .stage canvas.stage-water{pointer-events:none}
+
+/* $UPW staking card */
+.stake-card{display:flex;flex-direction:column;gap:12px}
+.stake-seg{align-self:flex-start}
+.stake-input{display:flex;align-items:center;gap:8px;height:46px;padding:0 6px 0 14px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid var(--line)}
+.stake-input input{flex:1;min-width:0;border:0;background:transparent;font:600 17px/1 var(--mono,monospace);color:var(--navy);outline:none}
+.stake-input span{font-size:12.5px;color:var(--muted)}
+.stake-max{height:32px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:#fff;font:600 12px var(--body);color:var(--blue);cursor:pointer}
+.stake-btn{width:100%}
+.stake-err{margin:-4px 0 0;font-size:12.5px;color:var(--down)}
+/* docs: contract addresses */
+.dc-addr-row{display:block;margin-top:4px}
+.dc-addr{font-size:12.5px;color:var(--blue);text-decoration:none}
+.dc-addr:hover{text-decoration:underline}
+.dc-soon{font-size:12px;color:var(--muted)}

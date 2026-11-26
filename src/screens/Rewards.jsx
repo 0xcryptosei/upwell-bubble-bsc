@@ -5,6 +5,7 @@ import { IconAlert, IconClock, ToastIcons } from '../components/Icons'
 import { api, weiToBnb } from '../lib/api'
 import { claimRewards, activeWallet } from '../lib/wallet'
 import { remain } from '../lib/format'
+import StakingCard from '../components/StakingCard'
 
 const SPLIT = [
   { label: 'Top callers', pct: 60, color: '#1BAAE0', bar: 'linear-gradient(90deg,#2EC5EC,#0A8BD0)' },
@@ -165,16 +166,7 @@ export default function Rewards() {
           </button>
           <p className="note">{claimNote}</p>
         </Tilt>
-        <Tilt className="glass card" max={3}>
-          <div className="card-title"><span>Your $UPW stake</span><Tag>Phase 2 preview</Tag></div>
-          <div className="stats2">
-            <div className="stat"><span>Staked</span><b>{online ? '—' : '48,200 UPW'}</b></div>
-            <div className="stat"><span>Pool share</span><b>{online ? '—' : '0.31%'}</b></div>
-            <div className="stat"><span>Paid last 7 days</span><b className="gold">{online ? '—' : '0.0099 BNB'}</b></div>
-            <div className="stat"><span>Lock</span><b>None</b></div>
-          </div>
-          {online && <p className="note" style={{ textAlign: 'left' }}>Staking opens in Phase 2.</p>}
-        </Tilt>
+        <StakingCard />
         <div className="glass card disclaimer">
           <IconAlert />
           <p style={{ margin: 0 }}>Payouts depend on trading volume and change every week. Past payouts do not promise future ones.</p>

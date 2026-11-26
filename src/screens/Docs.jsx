@@ -5,6 +5,7 @@ import { useApp } from '../store/AppContext'
 import { BRAND } from '../brand'
 import { Tag } from '../components/Bits'
 import { prefersReducedMotion } from '../lib/format'
+import { useContracts } from '../lib/useContracts'
 
 const T = BRAND.token
 
@@ -74,6 +75,9 @@ function useActiveSection() {
 
 export default function Docs() {
   const { go } = useApp()
+  // what is live comes from the backend, so these docs update themselves when contracts are deployed
+  const chain = useContracts()
+  const addr = (a) => a && <a className="mono dc-addr" href={`${chain.explorer}/address/${a}`} target="_blank" rel="noreferrer noopener">{a.slice(0, 6)}…{a.slice(-4)} ↗</a>
   const [active, setActive] = useActiveSection()
   const jump = (id) => {
     setActive(id)
@@ -184,12 +188,23 @@ export default function Docs() {
             </div>
             <ul className="dc-list">
               <li><b>60% top callers</b>: the top 100 on the weekly board share it in proportion to their score. Anything not handed out stays with callers and is added to next week's pool.</li>
-              <li><b>25% ${T} stakers</b>: shared by everyone staking, paid out evenly over the following 7 days (Phase 2).</li>
+              <li><b>25% ${T} stakers</b>: shared by everyone staking ${T}, paid out evenly over the following 7 days. No lock.{chain.stakingLive
+                ? <> Stake on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button>.</>
+                : <> Staking opens after ${T} launches; until then this share is set aside for stakers.</>}</li>
               <li><b>10% buyback &amp; burn</b>: buys ${T} and burns it.</li>
               <li><b>5% operations</b>: data, hosting and audits.</li>
             </ul>
-            <p><b>Today:</b> the vault shows this week's real ${T} tax income, read live from the token's tax contract on BNB Chain (anyone can verify it on BscScan). Before ${T} launches it shows a simulated preview. After each week closes, the {BRAND.name} team sends the callers' rewards to the wallets of the top callers. Your estimated share for the week is on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button>.</p>
-            <p><b>Once the vault is on-chain:</b> your share appears on Rewards when the week is published. You claim it to your wallet with one transaction (you pay the network fee), for one week or several at once. Unclaimed rewards return to the callers' pool after <b>90 days</b>.</p>
+            {chain.vault ? (
+              <>
+                <p><b>How you get paid:</b> the Reward Vault is live on BNB Chain ({addr(chain.vault)}). The week's tax BNB goes into it, and every Monday at 00:00 UTC the week closes automatically. If you finished in the top 100, your share appears on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button>, and you claim it to your wallet with one transaction (you pay a small network fee), for one week or several at once.</p>
+                <p>Claim within <b>90 days</b>: after that, unclaimed rewards return to the callers' pool. The vault balance shown in the app is read live from the contract, so anyone can check it on BscScan.</p>
+              </>
+            ) : (
+              <>
+                <p><b>Today:</b> the vault shows the real ${T} tax income, read live from the token's tax contract on BNB Chain: this week's income, or the all-time total until the first full week has been counted. Before ${T} launches it shows a simulated preview. After each week closes, the {BRAND.name} team sends the callers' rewards to the wallets of the top callers. Your estimated share for the week is on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button>.</p>
+                <p><b>Once the vault is on-chain:</b> your share appears on Rewards when the week is published. You claim it to your wallet with one transaction (you pay the network fee), for one week or several at once. Unclaimed rewards return to the callers' pool after <b>90 days</b>.</p>
+              </>
+            )}
           </section>
 
           <section id="safety" className="glass card dc-sec">
@@ -210,21 +225,27 @@ export default function Docs() {
 
           <section id="token" className="glass card dc-sec">
             <h2>${T} token</h2>
-            <p>${T} is the token behind {BRAND.name}, launched on Flap.sh on BNB Chain. Its trading tax funds the Reward Vault. Holding it lets you stake for a share of the vault and, in Phase 2, boost your calls.</p>
+            <p>${T} is the token behind {BRAND.name}, launched on Flap.sh on BNB Chain. Its trading tax funds the Reward Vault. {chain.stakingLive
+              ? <>Stake it on <button className="dc-link" onClick={() => go('rewards')}>Rewards</button> to share 25% of the vault in BNB (no lock). In Phase 2 it will also boost your calls.</>
+              : <>After launch, holding it lets you stake for a share of the vault (in BNB, no lock); in Phase 2 it will also boost your calls. Staking is not open yet.</>}</p>
             <p>Contract address, buy link and live details are on the <button className="dc-link" onClick={() => go('upw')}>${T} page</button>.</p>
           </section>
 
           <section id="contracts" className="glass card dc-sec">
             <h2>Smart contracts</h2>
-            <p>Four contracts on BNB Chain make rewards and records verifiable by anyone:</p>
+            <p>Contracts on BNB Chain make rewards and records verifiable by anyone:</p>
             <ul className="dc-badges">
-              {CONTRACTS.map(([n, d]) => <li key={n}><b className="mono">{n}</b><span>{d}</span></li>)}
+              {CONTRACTS.map(([n, d]) => {
+                const a = { RewardVault: chain.vault, CallLedger: chain.ledger, UpwellStaking: chain.staking }[n]
+                const status = a ? addr(a) : n === 'UpwellStaking' ? <span className="dc-soon">after ${T} launches</span> : n === 'UpwellBadges' ? <span className="dc-soon">later</span> : <span className="dc-soon">not deployed</span>
+                return <li key={n}><b className="mono">{n}</b><span>{d}</span><span className="dc-addr-row">{status}</span></li>
+              })}
             </ul>
             <h3 className="dc-h3">How rewards are protected</h3>
             <ul className="dc-badges">
               {SAFEGUARDS.map(([n, d]) => <li key={n}><b>{n}</b><span>{d}</span></li>)}
             </ul>
-            <p className="dc-note">The contracts are tested (58 tests, including attack and randomised tests) and have had an internal security review. They are not deployed yet: they go live after an external audit, and their addresses will be listed here.</p>
+            <p className="dc-note">The contracts are tested (58 tests, including attack and randomised tests) and have had an internal security review.{chain.vault ? ' Follow the links above to check them on BscScan.' : ' Their addresses will be listed here once deployed.'}</p>
           </section>
 
           <section id="risks" className="glass card dc-sec">

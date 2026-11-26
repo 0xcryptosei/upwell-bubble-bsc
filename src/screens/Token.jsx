@@ -7,6 +7,7 @@ import { Logo, Tag, Tilt } from '../components/Bits'
 import { IconAlert, IconCopy } from '../components/Icons'
 import { fmtUsd, fmtPct, fmtInt } from '../lib/format'
 import { weiToBnb } from '../lib/api'
+import { useContracts } from '../lib/useContracts'
 
 const SPLIT = [
   { label: 'Top callers', pct: 60, color: '#1BAAE0', bar: 'linear-gradient(90deg,#2EC5EC,#0A8BD0)', text: 'Paid in BNB every week, by leaderboard score.' },
@@ -29,6 +30,7 @@ const UTILITY = [
 
 export default function Token() {
   const { toast, vault, go, upw } = useApp()
+  const chain = useContracts()
   const ca = upw.ca
   const scan = upw.explorer
   const m = upw.market
@@ -135,12 +137,17 @@ export default function Token() {
 
       <div className="section-h"><h2>What holding ${BRAND.token} gives you</h2></div>
       <div className="tk-utility">
-        {UTILITY.map((u) => (
-          <Tilt key={u.title} className="glass card" max={4}>
-            <div className="card-title"><span>{u.title}</span><Tag tone={u.tag === 'At launch' ? 'aqua' : ''}>{u.tag}</Tag></div>
-            <p className="muted" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>{u.text}</p>
-          </Tilt>
-        ))}
+        {UTILITY.map((u) => {
+          // staking switches to "Live" (with a link) by itself once the backend reports the staking contract
+          const live = u.title === 'Stake, earn BNB' && chain.stakingLive
+          return (
+            <Tilt key={u.title} className="glass card" max={4}>
+              <div className="card-title"><span>{u.title}</span>{live ? <Tag tone="up">Live</Tag> : <Tag tone={u.tag === 'At launch' ? 'aqua' : ''}>{u.title === 'Stake, earn BNB' ? 'After launch' : u.tag}</Tag>}</div>
+              <p className="muted" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>{u.text}</p>
+              {live && <button className="btn-glass" style={{ marginTop: 10 }} onClick={() => go('rewards')}>Stake on Rewards</button>}
+            </Tilt>
+          )
+        })}
       </div>
 
       <div className="glass card disclaimer" style={{ marginTop: 'var(--gap)' }}>

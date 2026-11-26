@@ -1,0 +1,1 @@
+cd /workspace_m/project/upwell/contracts && ./deploy.sh mainnet staking (set env with $UPW CA)
