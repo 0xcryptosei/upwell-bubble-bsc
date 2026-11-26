@@ -40,3 +40,5 @@ desktop.ini
 # Claude Code: personal settings stay local (launch.json is shared)
 .claude/settings.local.json
 .claude
+# Personal notes, posts and recordings (not part of the app)
+/Posts &  video & terminal/
