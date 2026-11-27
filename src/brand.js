@@ -10,6 +10,6 @@ export const BRAND = {
   appUrl: 'up-well.space',
 
   // Official community links
-  x: env.VITE_X_URL || 'https://x.com/upwellpro',
-  telegram: env.VITE_TELEGRAM_URL || 'https://t.me/upwellorg',
+  x: env.VITE_X_URL || 'https://x.com/upwellspace',
+  telegram: env.VITE_TELEGRAM_URL || 'https://t.me/upwellpro',
 }
